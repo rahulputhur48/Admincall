@@ -1,0 +1,80 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny catch-all for any undefined collections
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Health / connection test document
+    match /test/{docId} {
+      allow read: if true;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isValidCall(data) {
+      return data.id is string && data.id.size() <= 128
+        && data.lineId is string && data.lineId.size() <= 64
+        && data.lineNumber is number
+        && data.lineName is string && data.lineName.size() <= 128
+        && data.reason is string && data.reason.size() <= 64
+        && data.reasonLabel is string && data.reasonLabel.size() <= 128
+        && data.timestamp is string && data.timestamp.size() <= 64
+        && data.status in ['CALLING', 'ACKNOWLEDGED', 'RESOLVED']
+        && (!('message' in data) || (data.message is string && data.message.size() <= 500))
+        && (!('formattedTime' in data) || (data.formattedTime is string && data.formattedTime.size() <= 64))
+        && (!('acknowledgedBy' in data) || (data.acknowledgedBy is string && data.acknowledgedBy.size() <= 128))
+        && (!('acknowledgedAt' in data) || (data.acknowledgedAt is string && data.acknowledgedAt.size() <= 64))
+        && (!('resolvedBy' in data) || (data.resolvedBy is string && data.resolvedBy.size() <= 128))
+        && (!('resolvedAt' in data) || (data.resolvedAt is string && data.resolvedAt.size() <= 64));
+    }
+
+    match /calls/{callId} {
+      allow read: if true;
+      allow create: if isValidId(callId)
+        && isValidCall(request.resource.data);
+      allow update: if isValidId(callId)
+        && isValidCall(request.resource.data);
+      allow delete: if isValidId(callId);
+    }
+
+    function isValidAnnouncement(data) {
+      return data.id is string && data.id.size() <= 128
+        && data.message is string && data.message.size() <= 500
+        && data.timestamp is string && data.timestamp.size() <= 64
+        && data.active is bool
+        && (!('formattedTime' in data) || (data.formattedTime is string && data.formattedTime.size() <= 64));
+    }
+
+    match /announcements/{announcementId} {
+      allow read: if true;
+      allow create: if isValidId(announcementId)
+        && isValidAnnouncement(request.resource.data);
+      allow update: if isValidId(announcementId)
+        && isValidAnnouncement(request.resource.data);
+      allow delete: if isValidId(announcementId);
+    }
+
+    function isValidDirectMessage(data) {
+      return data.id is string && data.id.size() <= 128
+        && data.lineId is string && data.lineId.size() <= 64
+        && data.lineName is string && data.lineName.size() <= 128
+        && data.message is string && data.message.size() <= 500
+        && data.timestamp is string && data.timestamp.size() <= 64
+        && data.active is bool
+        && (!('formattedTime' in data) || (data.formattedTime is string && data.formattedTime.size() <= 64));
+    }
+
+    match /directMessages/{lineId} {
+      allow read: if true;
+      allow create: if isValidId(lineId)
+        && isValidDirectMessage(request.resource.data);
+      allow update: if isValidId(lineId)
+        && isValidDirectMessage(request.resource.data);
+      allow delete: if isValidId(lineId);
+    }
+  }
+}

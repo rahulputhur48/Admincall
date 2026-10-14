@@ -1,0 +1,68 @@
+{
+  "entities": {
+    "PlantCall": {
+      "title": "PlantCall",
+      "description": "A help call triggered by a production line requesting assistance from the central admin.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "lineId": { "type": "string", "maxLength": 64 },
+        "lineNumber": { "type": "number" },
+        "lineName": { "type": "string", "maxLength": 128 },
+        "reason": { "type": "string", "maxLength": 64 },
+        "reasonLabel": { "type": "string", "maxLength": 128 },
+        "message": { "type": "string", "maxLength": 500 },
+        "timestamp": { "type": "string", "maxLength": 64 },
+        "formattedTime": { "type": "string", "maxLength": 64 },
+        "status": { "type": "string", "enum": ["CALLING", "ACKNOWLEDGED", "RESOLVED"] },
+        "acknowledgedBy": { "type": "string", "maxLength": 128 },
+        "acknowledgedAt": { "type": "string", "maxLength": 64 },
+        "resolvedBy": { "type": "string", "maxLength": 128 },
+        "resolvedAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["id", "lineId", "lineNumber", "lineName", "reason", "reasonLabel", "timestamp", "status"]
+    },
+    "PlantAnnouncement": {
+      "title": "PlantAnnouncement",
+      "description": "Broadcast announcement sent by Admin to all production line operators.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "message": { "type": "string", "maxLength": 500 },
+        "timestamp": { "type": "string", "maxLength": 64 },
+        "formattedTime": { "type": "string", "maxLength": 64 },
+        "active": { "type": "boolean" }
+      },
+      "required": ["id", "message", "timestamp", "active"]
+    },
+    "PlantDirectMessage": {
+      "title": "PlantDirectMessage",
+      "description": "Direct note sent by Admin to an individual production line.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "lineId": { "type": "string", "maxLength": 64 },
+        "lineName": { "type": "string", "maxLength": 128 },
+        "message": { "type": "string", "maxLength": 500 },
+        "timestamp": { "type": "string", "maxLength": 64 },
+        "formattedTime": { "type": "string", "maxLength": 64 },
+        "active": { "type": "boolean" }
+      },
+      "required": ["id", "lineId", "lineName", "message", "timestamp", "active"]
+    }
+  },
+  "firestore": {
+    "/calls/{callId}": {
+      "schema": "PlantCall",
+      "description": "Collection of production line help calls."
+    },
+    "/announcements/{announcementId}": {
+      "schema": "PlantAnnouncement",
+      "description": "Collection of broadcast announcements from Admin to all 5 lines."
+    },
+    "/directMessages/{lineId}": {
+      "schema": "PlantDirectMessage",
+      "description": "Collection of direct messages sent to specific lines."
+    }
+  }
+}
